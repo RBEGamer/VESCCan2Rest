@@ -1,0 +1,7 @@
+vesc_controller_ids:
+  - 1
+can_interface: 'can0'
+can_baudrate: 250000
+can_type: 'socketcan'
+webserver_port: 6001
+webserver_host: '0.0.0.0'
