@@ -7,6 +7,7 @@ import json
 import os
 from can import Message
 import yaml
+from can import Message
 from flask import Flask, jsonify, make_response
 from flask_restful import Resource, Api
 import threading
@@ -55,6 +56,12 @@ class vesc_status():
 
     def __json__(self):
         return self.__dict__
+
+
+class vesc_send_values():
+    def __init__(self):
+        pass
+    
 #### BASE ADRESSES + VESC ID
 PACKET_1_BASE = 2304
 PACKET_2_BASE = 3584
@@ -64,6 +71,13 @@ PACKET_1 = 1
 PACKET_2 = 2
 PACKET_3 = 3
 PACKET_4 = 4
+
+SET_PACKET_DUTYCYCLE = 0
+SET_PACKET_CURRENT = 1
+SET_PACKET_CURRENTBRAKE = 2
+SET_PACKET_RPM = 3
+SET_PACKET_POSITION = 4
+
 
 def check_is_vesc(_msg, _vid):
     str_id = str(_msg.arbitration_id)
@@ -108,25 +122,51 @@ def parse_packet_4(_msg, _vid):
 def  create_vesc_data_object(_vid):
     VESC_STATUS_DICT[str(_vid)] = vesc_status()
 
+def int_to_bytes(val, num_bytes):
+    return [(val & (0xff << pos*8)) >> pos*8 for pos in reversed(range(num_bytes))]
 
 def signal_handler(sig, frame):
     print('You pressed Ctrl+C!')
     sys.exit(0)
 # Press the green button in the gutter to run the script.
 
+def send_rpm(_bus, _vid, _value: float):
+    send_value_over_can(_bus, _vid, int(_value), SET_PACKET_RPM)
+
+def send_current(_bus, _vid, _value: float):
+    send_value_over_can(_bus, _vid, int(_value*1000.0), SET_PACKET_CURRENT)
+
+def send_currentbrake(_bus, _vid, _value: float):
+    send_value_over_can(_bus, _vid, int(_value*1000.0), SET_PACKET_CURRENTBRAKE)
+
+def send_dutycycle(_bus, _vid, _value: float):
+    send_value_over_can(_bus, _vid, int(_value*100000.0), SET_PACKET_DUTYCYCLE)
+
+def send_position(_bus, _vid, _value: float):
+    send_value_over_can(_bus, _vid, int(_value*100000.0), SET_PACKET_POSITION)
+
+def send_value_over_can(_bus, _vid, _rpm, _packet_id):
+    id_bytes = int_to_bytes(int(_vid), 2)
+    id_int = int(str('3' + str(id_bytes[0]) + str(id_bytes[1])), 16)
+    #val = int_to_bytes(int(_rpm), 4)
+    val = hex(_rpm)
+    val = int(val, 16)
+    val = int_to_bytes(int(val), 4)
+    msg = Message(is_extended_id=True, arbitration_id=id_int, data=[val[0], val[1], val[2], val[3]])
+    _bus.send(msg)
 
 
-
-def can_thread(_cfg, _lock):
+def can_thread(_cfg, _lock, _bus):
     global VESC_STATUS_DICT
-    # CONNECT TO CANBUS
-    bus = can.interface.Bus(bustype=str(_cfg['can_type']), channel=str(_cfg['can_interface']),
-                            bitrate=int(_cfg['can_baudrate']))
+
     ids = cfg['vesc_controller_ids']
+
+    send_rpm(_bus, ids[0], 3000)
+
 
     while True:
         # GET LAST CAN MESSAGE
-        msg = bus.recv()
+        msg = _bus.recv()
         if msg is None:
             continue
         # PARSE PACKET
@@ -195,8 +235,13 @@ if __name__ == '__main__':
     for vid in cfg['vesc_controller_ids']:
         create_vesc_data_object(vid)
 
+
+    # CONNECT CAN BUS
+    bus = can.interface.ThreadSafeBus(bustype=str(cfg['can_type']), channel=str(cfg['can_interface']),
+                            bitrate=int(cfg['can_baudrate']))
+
     # START CAN THREAD
-    can_thread_instance = threading.Thread(target=can_thread, args=(cfg, thread_lock, ))
+    can_thread_instance = threading.Thread(target=can_thread, args=(cfg, thread_lock, bus, ))
     can_thread_instance.start()
 
     app.run(host=cfg['webserver_host'], port=cfg['webserver_port'])
