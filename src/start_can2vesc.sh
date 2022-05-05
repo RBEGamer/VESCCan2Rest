@@ -3,9 +3,10 @@ cd "$(dirname "$0")"
 
 
 # ENBALE KERNEL MODULES FOR CAN
-modprobe can
-modprobe can-raw
-modprobe slcan
+#modprobe can
+#modprobe can-raw
+
+#modprobe slcan
 
 ifconfig can0 down  || true
 
