@@ -1,0 +1,17 @@
+[Unit]
+Description=VESCCan2Rest
+Requires=network-online.target
+After=network-online.target
+Before=
+
+[Service]
+Type=simple
+
+WorkingDirectory=/home/nvidia/VESCCan2Rest/src/
+
+ExecStart=/home/nvidia/VESCCan2Rest/src/start_can2vesc.sh
+StandardOutput=journal
+TimeoutStopSec=10
+
+[Install]
+WantedBy=multi-user.target
