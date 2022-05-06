@@ -102,19 +102,19 @@ class vesc_send_values():
 
     def set_current(self, _value: float):
         self.reset()
-        self.current = int(_value * 10.0)
+        self.current = int(_value * 1.0)
 
     def set_currentbrake(self, _value: float):
         self.reset()
-        self.currentbrake = int(_value * 10.0)
+        self.currentbrake = int(_value * 1.0)
 
     def set_dutycycle(self, _value: float):
         self.reset()
-        self.dutycycle = int(_value * 1000.0)
+        self.dutycycle = int(_value * 1.0)
 
     def set_position(self, _value: float):
         self.reset()
-        self.position = int(_value * 1000.0)
+        self.position = int(_value * 1.0)
 
     def get_current_set_value(self):
         if self.rpm is not None and self.current is None and self.currentbrake is None and self.dutycycle is None and self.position is None:
