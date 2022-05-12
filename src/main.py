@@ -13,6 +13,8 @@ from flask import Flask, jsonify, make_response
 from flask_restful import Resource, Api
 import threading
 from threading import Thread, Lock
+import paho.mqtt.client as mqtt
+
 
 app = Flask(__name__)
 api = Api(app)
