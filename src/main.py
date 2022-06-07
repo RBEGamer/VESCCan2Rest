@@ -149,36 +149,25 @@ def check_is_vesc(_msg, _vid):
 
 
 def parse_packet_1(_msg, _vid):
-    VESC_STATUS_DICT[str(_vid)].rpm = int.from_bytes([_msg.data[3], _msg.data[2], _msg.data[1], _msg.data[0]],
-                                                     byteorder='little', signed=False)
-    VESC_STATUS_DICT[str(_vid)].total_current = int.from_bytes([_msg.data[4], _msg.data[5]], byteorder='little',
-                                                               signed=False) / 10.0
+    VESC_STATUS_DICT[str(_vid)].rpm = int.from_bytes([_msg.data[0], _msg.data[1], _msg.data[2], _msg.data[3]], byteorder='big', signed=True)
+    VESC_STATUS_DICT[str(_vid)].total_current = int.from_bytes([_msg.data[4], _msg.data[5]], byteorder='big', signed=True) / 10.0
 
 
 def parse_packet_2(_msg, _vid):
-    VESC_STATUS_DICT[str(_vid)].total_amp_hours_consumed = int.from_bytes(
-        [_msg.data[3], _msg.data[2], _msg.data[1], _msg.data[0]], byteorder='little', signed=False) / 10000.0
-    VESC_STATUS_DICT[str(_vid)].total_amp_hours_regenerative = int.from_bytes(
-        [_msg.data[4], _msg.data[5], _msg.data[6], _msg.data[7]], byteorder='little', signed=False) / 10000.0
+    VESC_STATUS_DICT[str(_vid)].total_amp_hours_consumed = int.from_bytes([_msg.data[0], _msg.data[1], _msg.data[2], _msg.data[3]], byteorder='big', signed=False) / 10000.0
+    VESC_STATUS_DICT[str(_vid)].total_amp_hours_regenerative = int.from_bytes([_msg.data[4], _msg.data[5], _msg.data[6], _msg.data[7]], byteorder='big', signed=False) / 10000.0
 
 
 def parse_packet_3(_msg, _vid):
-    VESC_STATUS_DICT[str(_vid)].total_watt_hours_consumed = int.from_bytes(
-        [_msg.data[3], _msg.data[2], _msg.data[1], _msg.data[0]], byteorder='little', signed=False) / 10000.0
-    VESC_STATUS_DICT[str(_vid)].total_watt_hours_regenerative = int.from_bytes(
-        [_msg.data[4], _msg.data[5], _msg.data[6], _msg.data[7]], byteorder='little', signed=False) / 10000.0
+    VESC_STATUS_DICT[str(_vid)].total_watt_hours_consumed = int.from_bytes([_msg.data[0], _msg.data[1], _msg.data[2], _msg.data[3]], byteorder='big', signed=False) / 10000.0
+    VESC_STATUS_DICT[str(_vid)].total_watt_hours_regenerative = int.from_bytes([_msg.data[4], _msg.data[5], _msg.data[6], _msg.data[7]], byteorder='big', signed=False) / 10000.0
 
 
 def parse_packet_4(_msg, _vid):
-    VESC_STATUS_DICT[str(_vid)].mosfet_temperature = int.from_bytes([_msg.data[0], _msg.data[1]], byteorder='little',
-                                                                    signed=True) / 100.0
-    VESC_STATUS_DICT[str(_vid)].motor_temperature = int.from_bytes([_msg.data[2], _msg.data[3]], byteorder='little',
-                                                                   signed=True) / 100.0
-    VESC_STATUS_DICT[str(_vid)].total_input_current = int.from_bytes([_msg.data[4], _msg.data[5]], byteorder='little',
-                                                                     signed=False) / 10.0
-    VESC_STATUS_DICT[str(_vid)].current_pid_position = int.from_bytes([_msg.data[6], _msg.data[7]], byteorder='little',
-                                                                      signed=False)
-
+    VESC_STATUS_DICT[str(_vid)].mosfet_temperature = int.from_bytes([_msg.data[0], _msg.data[1]], byteorder='big', signed=True) / 10.0
+    VESC_STATUS_DICT[str(_vid)].motor_temperature = int.from_bytes([_msg.data[2], _msg.data[3]], byteorder='big', signed=True) / 10.0
+    VESC_STATUS_DICT[str(_vid)].total_input_current = int.from_bytes([_msg.data[4], _msg.data[5]], byteorder='big', signed=True) / 10.0
+    VESC_STATUS_DICT[str(_vid)].current_pid_position = int.from_bytes([_msg.data[6], _msg.data[7]], byteorder='big', signed=False)
 
 def create_vesc_data_object(_vid):
     VESC_STATUS_DICT[str(_vid)] = vesc_status()
